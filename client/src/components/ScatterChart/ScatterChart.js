@@ -36,34 +36,31 @@ export const ScatterChart = () => {
     yCoordinateProp: undefined,
     labelProp: undefined
   });
-
-  const toggleDrawer = () => {
-    setIsOpen(prevState => !prevState);
-  };
-
   const { datapoints, getDatas } = useContext(GlobalContext);
+
+  const datasets = transformCoordinates(datapoints)
 
   useEffect(() => {
     getDatas();
   }, [])
 
-  const printDatasetAtEvent = dataset => {
-    if (!dataset.length) return;
-    
-    const datasetIndex = dataset[0].datasetIndex;
-
-    setDataPoint({
-      xCoordinateProp: datapoints[datasetIndex].xCoordinate,
-      yCoordinateProp: datapoints[datasetIndex].yCoordinate,
-      labelProp: datapoints[datasetIndex].label
-    })
-    toggleDrawer()
+  const toggleDrawer = () => {
+    setIsOpen(prevState => !prevState);
   };
 
-
-  const onClick = event => {
+  const openDrawer = event => {
     if (chartRef.current !== undefined) {
-      printDatasetAtEvent(getDatasetAtEvent(chartRef.current, event));
+      const dataset = getDatasetAtEvent(chartRef.current, event)
+      if (!dataset.length) return;
+    
+      const datasetIndex = dataset[0].datasetIndex;
+
+      setDataPoint({
+        xCoordinateProp: datapoints[datasetIndex].xCoordinate,
+        yCoordinateProp: datapoints[datasetIndex].yCoordinate,
+        labelProp: datapoints[datasetIndex].label
+      })
+      toggleDrawer()
     }
   };
 
@@ -72,7 +69,7 @@ export const ScatterChart = () => {
       { datapoints.length < 1 &&
         <p>No Data Points available yet. Loading them</p>
       }
-      {transformCoordinates(datapoints).length > 0 ? <Scatter options={options} data={{datasets : transformCoordinates(datapoints)}} ref={chartRef} onClick={onClick} /> : null }
+      {datasets.length > 0 ? <Scatter options={options} data={{datasets}} ref={chartRef} onClick={openDrawer} /> : null }
       <Drawer open={isOpen} onClose={toggleDrawer} direction='right' className='bla bla bla'>
         {currentDataPoint && <UpdateDeleteForm {...currentDataPoint} />}
       </Drawer>
